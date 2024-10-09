@@ -1,11 +1,5 @@
 import os
 import time
-from rich import print
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-
-console = Console()
 
 # Tamanho do disco e inicialização
 TAMANHO_DISCO = 32  # Número de blocos
@@ -18,33 +12,31 @@ def clear_screen():
 
 def print_disk():
     # Imprime o estado atual do disco
-    console.print("\n[bold cyan]Estado Atual do Disco:[/bold cyan]")
-    table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Bloco", style="dim", width=6)
-    table.add_column("Char", width=8)
-    table.add_column("Ponteiro", justify="right")
+    print("\nEstado Atual do Disco:")
+    print("-" * 40)
+    print(f"{'Bloco':<6}{'Char':<8}{'Ponteiro':<8}")
     for i, block in enumerate(disk):
-        char = block['char'] if block['char'] is not None else "[green]Livre[/green]"
+        char = block['char'] if block['char'] is not None else "Livre"
         pointer = str(block['pointer']) if block['pointer'] is not None else "-"
-        table.add_row(str(i), char, pointer)
-    console.print(table)
+        print(f"{i:<6}{char:<8}{pointer:<8}")
+    print("-" * 40)
 
 def create_file():
     # Cria um novo arquivo no sistema de arquivos.
-    name = console.input("[bold green]Digite o nome do arquivo:[/bold green] ")
-    content = console.input("[bold green]Digite o conteúdo do arquivo:[/bold green] ")
+    name = input("Digite o nome do arquivo: ")
+    content = input("Digite o conteúdo do arquivo: ")
     size = len(content)  # Tamanho do arquivo
 
     # Verifica se o arquivo já existe
     for file in file_table:
         if file['name'] == name:
-            console.print(f"\n[red]Arquivo '{name}' já existe.[/red]")
+            print(f"\nArquivo '{name}' já existe.")
             return
 
     # Verifica se há espaço livre suficiente
     total_free_blocks = sum(1 for block in disk if block['char'] is None)
     if total_free_blocks < size:
-        console.print(f"\n[red]Espaço insuficiente para criar o arquivo '{name}'.[/red]")
+        print(f"\nEspaço insuficiente para criar o arquivo '{name}'.")
         return
 
     # Aloca blocos livres
@@ -73,18 +65,18 @@ def create_file():
         'address': allocated_blocks[0]
     }
     file_table.append(file_entry)
-    console.print(f"\n[green]Arquivo '{name}' criado com sucesso![/green]")
+    print(f"\nArquivo '{name}' criado com sucesso!")
     print_disk()
 
 def read_file():
     # Lê o conteúdo de um arquivo específico.
-    name = console.input("[bold green]Digite o nome do arquivo a ser lido:[/bold green] ")
+    name = input("Digite o nome do arquivo a ser lido: ")
 
     # Encontra o arquivo na tabela de arquivos
     file_entry = next((file for file in file_table if file['name'] == name), None)
 
     if file_entry is None:
-        console.print(f"\n[red]Arquivo '{name}' não encontrado.[/red]")
+        print(f"\nArquivo '{name}' não encontrado.")
         return
 
     # Percorre os blocos do arquivo
@@ -96,19 +88,18 @@ def read_file():
         content += char
         pointer = block['pointer']
 
-    panel = Panel(f"[bold cyan]{content}[/bold cyan]", title=f"Conteúdo do arquivo '{name}'", expand=False)
-    console.print(panel)
+    print(f"\nConteúdo do arquivo '{name}': {content}")
     print_disk()
 
 def delete_file():
     # Exclui um arquivo do sistema de arquivos.
-    name = console.input("[bold green]Digite o nome do arquivo a ser excluído:[/bold green] ")
+    name = input("Digite o nome do arquivo a ser excluído: ")
 
     # Encontra o arquivo na tabela de arquivos
     file_entry = next((file for file in file_table if file['name'] == name), None)
 
     if file_entry is None:
-        console.print(f"\n[red]Arquivo '{name}' não encontrado.[/red]")
+        print(f"\nArquivo '{name}' não encontrado.")
         return
 
     # Libera os blocos alocados
@@ -122,57 +113,57 @@ def delete_file():
 
     # Remove da tabela de arquivos
     file_table.remove(file_entry)
-    console.print(f"\n[green]Arquivo '{name}' excluído com sucesso![/green]")
+    print(f"\nArquivo '{name}' excluído com sucesso!")
     print_disk()
 
 def print_file_table():
     # Imprime a tabela de arquivos.
-    console.print("\n[bold cyan]Tabela de Arquivos:[/bold cyan]")
+    print("\nTabela de Arquivos:")
+    print("-" * 40)
     if not file_table:
-        console.print("[yellow]Nenhum arquivo armazenado.[/yellow]")
+        print("Nenhum arquivo armazenado.")
     else:
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Nome", style="dim", width=15)
-        table.add_column("Tamanho", justify="right")
-        table.add_column("Endereço", justify="right")
+        print(f"{'Nome':<15}{'Tamanho':<10}{'Endereço':<10}")
         for file in file_table:
-            table.add_row(file['name'], str(file['size']), str(file['address']))
-        console.print(table)
+            print(f"{file['name']:<15}{file['size']:<10}{file['address']:<10}")
+    print("-" * 40)
 
 def main():
     # Função principal que exibe o menu e captura as escolhas do usuário.
     while True:
         clear_screen()
-        console.rule("[bold blue]Simulação de Sistema de Arquivos[/bold blue]", style="blue")
-        console.print("[bold magenta][1][/bold magenta] Criar Arquivo")
-        console.print("[bold magenta][2][/bold magenta] Ler Arquivo")
-        console.print("[bold magenta][3][/bold magenta] Excluir Arquivo")
-        console.print("[bold magenta][4][/bold magenta] Mostrar Tabela de Arquivos")
-        console.print("[bold magenta][5][/bold magenta] Mostrar Estado do Disco")
-        console.print("[bold magenta][0][/bold magenta] Sair\n")
-        escolha = console.input("[bold green]Escolha uma opção:[/bold green] ")
+        print("=" * 40)
+        print("Simulação de Sistema de Arquivos".center(40))
+        print("=" * 40)
+        print("[1] Criar Arquivo")
+        print("[2] Ler Arquivo")
+        print("[3] Excluir Arquivo")
+        print("[4] Mostrar Tabela de Arquivos")
+        print("[5] Mostrar Estado do Disco")
+        print("[0] Sair\n")
+        escolha = input("Escolha uma opção: ")
 
         if escolha == '1':
             create_file()
-            console.input("\nPressione Enter para continuar...")
+            input("\nPressione Enter para continuar...")
         elif escolha == '2':
             read_file()
-            console.input("\nPressione Enter para continuar...")
+            input("\nPressione Enter para continuar...")
         elif escolha == '3':
             delete_file()
-            console.input("\nPressione Enter para continuar...")
+            input("\nPressione Enter para continuar...")
         elif escolha == '4':
             print_file_table()
-            console.input("\nPressione Enter para continuar...")
+            input("\nPressione Enter para continuar...")
         elif escolha == '5':
             print_disk()
-            console.input("\nPressione Enter para continuar...")
+            input("\nPressione Enter para continuar...")
         elif escolha == '0':
-            console.print("\n[bold red]Encerrando o programa...[/bold red]")
+            print("\nEncerrando o programa...")
             time.sleep(1)
             break
         else:
-            console.print("\n[red]Opção inválida! Tente novamente.[/red]")
+            print("\nOpção inválida! Tente novamente.")
             time.sleep(1)
 
 if __name__ == "__main__":
